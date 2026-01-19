@@ -18,7 +18,15 @@ CREATE TABLE
     title VARCHAR(100) NOT NULL,
     amount DECIMAL(15, 2) NOT NULL,
     status ENUM ('PENDING', 'PAID') NOT NULL DEFAULT 'PENDING',
-    category VARCHAR(50) NOT NULL,
+    category ENUM (
+      'FOOD',
+      'TRANSPORT',
+      'HOUSING',
+      'HEALTH',
+      'EDUCATION',
+      'LEISURE',
+      'OTHER'
+    ) NOT NULL,
     expense_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
