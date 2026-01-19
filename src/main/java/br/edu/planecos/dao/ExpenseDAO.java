@@ -78,4 +78,51 @@ public class ExpenseDAO {
       throw new DbException("Erro ao deletar despesa: " + e.getMessage(), e);
     }
   }
+
+  public Expense findById(Long id) {
+    String sql = "SELECT id, user_id, title, amount, status, category, expense_date FROM expenses WHERE id = ?";
+    try (Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setLong(1, id);
+
+      try (ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          Expense exp = new Expense();
+          exp.setId(rs.getLong("id"));
+          exp.setUserId(rs.getLong("user_id"));
+          exp.setTitle(rs.getString("title"));
+          exp.setAmount(rs.getBigDecimal("amount"));
+          exp.setStatus(ExpenseStatus.fromString(rs.getString("status")));
+          exp.setCategory(ExpenseCategory.fromString(rs.getString("category")));
+          exp.setExpenseDate(rs.getDate("expense_date").toLocalDate());
+          return exp;
+        }
+      }
+    } catch (SQLException e) {
+      throw new DbException("Erro ao buscar despesa por ID", e);
+    }
+    return null;
+  }
+
+  // Adicione este método para atualizar os dados de uma despesa existente
+  public void update(Expense expense) {
+    String sql = "UPDATE expenses SET title = ?, amount = ?, status = ?, category = ?, expense_date = ? WHERE id = ?";
+
+    try (Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+      stmt.setString(1, expense.getTitle());
+      stmt.setBigDecimal(2, expense.getAmount());
+      stmt.setString(3, expense.getStatus().name());
+      stmt.setString(4, expense.getCategory().name());
+      stmt.setDate(5, java.sql.Date.valueOf(expense.getExpenseDate()));
+      stmt.setLong(6, expense.getId());
+
+      stmt.executeUpdate();
+
+    } catch (SQLException e) {
+      throw new DbException("Erro ao atualizar despesa", e);
+    }
+  }
 }

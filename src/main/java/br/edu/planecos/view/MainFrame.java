@@ -212,38 +212,34 @@ public class MainFrame extends JFrame {
       try {
         user.setFullName(txtName.getText());
         user.setCurrentBalance(new BigDecimal(txtBal.getText().replace(",", ".")));
-
-        // Precisamos de um método update no UserService/DAO
-        // Por enquanto, vou assumir que você adicionará um update no DAO
-        // userService.updateUser(user); <-- Crie este método no Service e DAO
-
-        // Mock visual:
+        userService.updateUserProfile(user);
         lblUserName.setText("Usuário: " + user.getFullName());
         lblBalance.setText("Saldo: R$ " + user.getCurrentBalance());
-        JOptionPane.showMessageDialog(this, "Dados atualizados! (Implemente o update no DAO)");
+        JOptionPane.showMessageDialog(this, "Dados atualizados!");
       } catch (Exception ex) {
         JOptionPane.showMessageDialog(this, "Erro: " + ex.getMessage());
       }
     }
   }
 
-  // Regra: Só pode alterar status, não valor
   private void toggleExpenseStatus() {
     int row = expenseTable.getSelectedRow();
-    if (row == -1)
-      return;
 
-    String currentStatusLabel = (String) tableModel.getValueAt(row, 5);
+    if (row == -1) {
+      JOptionPane.showMessageDialog(this, "Selecione uma despesa para alterar o status.", "Aviso",
+          JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
     Long id = (Long) tableModel.getValueAt(row, 0);
 
-    // Aqui você precisaria de um método no Service:
-    // expenseService.toggleStatus(id);
-    // Esse método buscaria a despesa, inverteria o status e, IMPORTANTE:
-    // Atualizaria o saldo do usuário (se virou PAGO, desconta. Se virou PENDENTE,
-    // estorna).
-
-    JOptionPane.showMessageDialog(this,
-        "Funcionalidade: Alterar status de " + currentStatusLabel + " para o inverso.\n" +
-            "Lembre-se de implementar a lógica de recálculo de saldo no Service!");
+    try {
+      expenseService.toggleExpenseStatus(id);
+      refreshData();
+      JOptionPane.showMessageDialog(this, "Status alterado com sucesso!");
+    } catch (Exception ex) {
+      JOptionPane.showMessageDialog(this, "Erro ao alterar status: " + ex.getMessage(), "Erro",
+          JOptionPane.ERROR_MESSAGE);
+    }
   }
 }

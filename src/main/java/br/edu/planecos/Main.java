@@ -27,10 +27,8 @@ public class Main {
                 UserService userService = new UserService();
 
                 if (userService.hasRegisteredUser()) {
-                    System.out.println("Usuário encontrado! Abrindo Tela Principal...");
                     new MainFrame().setVisible(true);
                 } else {
-                    System.out.println("Primeiro acesso! Abrindo Tela de Cadastro...");
                     new RegisterFrame().setVisible(true);
                 }
 

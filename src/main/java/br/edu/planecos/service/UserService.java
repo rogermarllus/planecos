@@ -31,6 +31,14 @@ public class UserService {
     return newUser;
   }
 
+  public void updateUserProfile(User user) {
+    // Validações básicas
+    if (user.getFullName() == null || user.getFullName().trim().isEmpty()) {
+      throw new IllegalArgumentException("Nome não pode ser vazio.");
+    }
+    userDAO.update(user);
+  }
+
   public User getCurrentUser() {
     return userDAO.findFirstUser();
   }
