@@ -1,0 +1,5 @@
+# Configurações do Banco de Dados - MODELO
+# Renomeie este arquivo para db.properties e insira suas credenciais
+db.url=jdbc:mysql://localhost:3306/planecos
+db.user=root
+db.password=sua_senha_aqui

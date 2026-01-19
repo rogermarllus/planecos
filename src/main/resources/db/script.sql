@@ -1,0 +1,30 @@
+CREATE DATABASE IF NOT EXISTS planecos;
+
+USE planecos;
+
+CREATE TABLE
+  IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    current_balance DECIMAL(15, 2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  );
+
+CREATE TABLE
+  IF NOT EXISTS expenses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    amount DECIMAL(15, 2) NOT NULL,
+    status ENUM ('PENDING', 'PAID') NOT NULL DEFAULT 'PENDING',
+    category VARCHAR(50) NOT NULL,
+    expense_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_expenses_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+  );
+
+CREATE INDEX idx_expenses_date ON expenses (expense_date);
+
+CREATE INDEX idx_expenses_status ON expenses (status);
