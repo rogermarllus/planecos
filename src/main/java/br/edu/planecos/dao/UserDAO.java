@@ -27,6 +27,19 @@ public class UserDAO {
     }
   }
 
+  public void update(User user) {
+    String sql = "UPDATE users SET full_name = ?, current_balance = ? WHERE id = ?";
+    try (Connection conn = ConnectionFactory.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql)) {
+      stmt.setString(1, user.getFullName());
+      stmt.setBigDecimal(2, user.getCurrentBalance());
+      stmt.setLong(3, user.getId());
+      stmt.executeUpdate();
+    } catch (SQLException e) {
+      throw new DbException("Erro ao atualizar usuário", e);
+    }
+  }
+
   public User findFirstUser() {
     String sql = "SELECT id, full_name, current_balance, created_at FROM users LIMIT 1";
     try (Connection conn = ConnectionFactory.getConnection();

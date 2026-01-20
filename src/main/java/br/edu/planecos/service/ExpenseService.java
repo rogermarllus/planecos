@@ -5,6 +5,8 @@ import br.edu.planecos.dao.UserDAO;
 import br.edu.planecos.model.Expense;
 import br.edu.planecos.model.User;
 import br.edu.planecos.model.enums.ExpenseStatus;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 public class ExpenseService {
@@ -17,38 +19,65 @@ public class ExpenseService {
     this.userDAO = new UserDAO();
   }
 
+  // 1. CADASTRO: Se nascer PAGA, desconta do saldo.
   public void registerExpense(Expense expense) {
-    // 1. Validações básicas
-    if (expense.getAmount().signum() <= 0) {
+    if (expense.getAmount() == null || expense.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("O valor da despesa deve ser positivo.");
     }
 
-    // 2. Salva a despesa
+    // Salva a despesa primeiro
     expenseDAO.save(expense);
 
-    // 3. Regra de Negócio: Se já foi paga, abate do saldo do usuário
+    // Regra: Se já nasce PAGA, debita do usuário
     if (expense.getStatus() == ExpenseStatus.PAID) {
-      User user = userDAO.findFirstUser(); // Busca o usuário atual
+      User user = userDAO.findFirstUser();
       if (user != null) {
-        // Subtrai do saldo: saldoAtual - valorDespesa
-        user.setCurrentBalance(user.getCurrentBalance().subtract(expense.getAmount()));
+        BigDecimal novoSaldo = user.getCurrentBalance().subtract(expense.getAmount());
+        user.setCurrentBalance(novoSaldo);
         userDAO.updateBalance(user);
       }
     }
   }
 
-  public List<Expense> listAllExpenses() {
+  // 2. ALTERAR STATUS: Inverte e ajusta o saldo (Estorno ou Pagamento)
+  public void toggleExpenseStatus(Long expenseId) {
+    Expense expense = expenseDAO.findById(expenseId);
+    if (expense == null) {
+      throw new IllegalArgumentException("Despesa não encontrada para o ID: " + expenseId);
+    }
+
     User user = userDAO.findFirstUser();
     if (user == null) {
-      throw new IllegalStateException("Nenhum usuário cadastrado para listar despesas.");
+      throw new IllegalStateException("Usuário não encontrado.");
     }
-    return expenseDAO.findAll(user.getId());
+
+    // Lógica da troca
+    if (expense.getStatus() == ExpenseStatus.PENDING) {
+      // ESTAVA PENDENTE -> VIROU PAGA
+      // Ação: Pagar (Subtrair do saldo)
+      expense.setStatus(ExpenseStatus.PAID);
+      user.setCurrentBalance(user.getCurrentBalance().subtract(expense.getAmount()));
+    } else {
+      // ESTAVA PAGA -> VIROU PENDENTE
+      // Ação: Estornar (Devolver valor ao saldo)
+      expense.setStatus(ExpenseStatus.PENDING);
+      user.setCurrentBalance(user.getCurrentBalance().add(expense.getAmount()));
+    }
+
+    // Persiste as alterações no banco
+    expenseDAO.update(expense); // Atualiza o status da despesa
+    userDAO.updateBalance(user); // Atualiza o saldo do usuário
   }
 
-  public void deleteExpense(Long expenseId) {
-    // Em um cenário real, se deletar uma despesa PAGA, deveríamos estornar o valor
-    // ao saldo?
-    // Por simplicidade, vamos apenas deletar por enquanto.
-    expenseDAO.delete(expenseId);
+  public List<Expense> listAllExpenses() {
+    User user = userDAO.findFirstUser();
+    if (user != null) {
+      return expenseDAO.findAll(user.getId());
+    }
+    return List.of();
+  }
+
+  public void deleteExpense(Long id) {
+    expenseDAO.delete(id);
   }
 }
