@@ -24,12 +24,11 @@ class ExpenseDAOTest {
 
   @BeforeEach
   void setUp() {
-    cleanDatabase(); // Limpa tudo antes de começar
+    cleanDatabase();
 
     this.expenseDAO = new ExpenseDAO();
     this.userDAO = new UserDAO();
 
-    // Para salvar despesa, PRECISAMOS de um usuário salvo antes (FK)
     this.userPadrao = new User();
     userPadrao.setFullName("Dono das Despesas");
     userPadrao.setCurrentBalance(new BigDecimal("1000.00"));
@@ -49,7 +48,6 @@ class ExpenseDAOTest {
   @Test
   @DisplayName("Deve listar despesas de um usuário específico")
   void shouldFindAllExpensesForUser() {
-    // Cria duas despesas para o userPadrao
     Expense exp1 = criarDespesaExemplo();
     expenseDAO.save(exp1);
 
@@ -57,11 +55,9 @@ class ExpenseDAOTest {
     exp2.setTitle("Outra despesa");
     expenseDAO.save(exp2);
 
-    // Busca
     List<Expense> lista = expenseDAO.findAll(userPadrao.getId());
 
     Assertions.assertEquals(2, lista.size());
-    // Verifica se a ordenação (DESC por data) ou dados estão vindo
     Assertions.assertTrue(lista.stream().anyMatch(e -> e.getTitle().equals("Conta de Luz")));
   }
 
@@ -78,11 +74,9 @@ class ExpenseDAOTest {
     Assertions.assertTrue(lista.isEmpty(), "A lista deveria estar vazia após deletar");
   }
 
-  // --- Métodos Auxiliares ---
-
   private Expense criarDespesaExemplo() {
     Expense exp = new Expense();
-    exp.setUserId(userPadrao.getId()); // Vínculo importante!
+    exp.setUserId(userPadrao.getId());
     exp.setTitle("Conta de Luz");
     exp.setAmount(new BigDecimal("150.00"));
     exp.setCategory(ExpenseCategory.HOUSING);
@@ -92,7 +86,6 @@ class ExpenseDAOTest {
   }
 
   private void cleanDatabase() {
-    // Mesma lógica do UserDAOTest
     try (Connection conn = ConnectionFactory.getConnection();
         Statement stmt = conn.createStatement()) {
       stmt.execute("SET FOREIGN_KEY_CHECKS = 0");

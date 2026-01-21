@@ -105,7 +105,6 @@ public class ExpenseDAO {
     return null;
   }
 
-  // Adicione este método para atualizar os dados de uma despesa existente
   public void update(Expense expense) {
     String sql = "UPDATE expenses SET title = ?, amount = ?, status = ?, category = ?, expense_date = ? WHERE id = ?";
 

@@ -18,7 +18,7 @@ class UserServiceTest {
 
   @BeforeEach
   void setUp() {
-    cleanDatabase(); // Garante banco limpo para cada teste
+    cleanDatabase();
     this.userService = new UserService();
   }
 
@@ -29,14 +29,12 @@ class UserServiceTest {
 
     Assertions.assertNotNull(user.getId());
     Assertions.assertEquals("Maria Silva", user.getFullName());
-    // Verifica se realmente salvou e se conseguimos buscar de volta
     Assertions.assertTrue(userService.hasRegisteredUser());
   }
 
   @Test
   @DisplayName("Não deve permitir usuário com nome vazio")
   void shouldBlockEmptyName() {
-    // Preparação FORA do assertThrows
     BigDecimal zeroBalance = BigDecimal.ZERO;
 
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -51,9 +49,6 @@ class UserServiceTest {
   @Test
   @DisplayName("Não deve permitir saldo inicial negativo")
   void shouldBlockNegativeBalance() {
-    // Preparação FORA do assertThrows
-    // Se este new BigDecimal falhar, o teste quebra (ERRO) em vez de passar
-    // falsamente.
     BigDecimal negativeBalance = new BigDecimal("-10.00");
     String nomeValido = "João";
 
@@ -62,7 +57,6 @@ class UserServiceTest {
     });
   }
 
-  // --- Helper de Limpeza (Mesmo padrão dos DAOs) ---
   private void cleanDatabase() {
     try (Connection conn = ConnectionFactory.getConnection();
         Statement stmt = conn.createStatement()) {

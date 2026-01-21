@@ -15,12 +15,12 @@ import java.time.format.DateTimeFormatter;
 
 public class ExpenseDialog extends JDialog {
 
-  private final ExpenseService expenseService;
-  private final UserService userService;
-  private final Runnable onSuccessCallback; // Para atualizar a tabela da MainFrame
+  private final transient ExpenseService expenseService;
+  private final transient UserService userService;
+  private final transient Runnable onSuccessCallback;
 
   public ExpenseDialog(Frame parent, Runnable onSuccessCallback) {
-    super(parent, "Nova Despesa", true); // true = Modal
+    super(parent, "Nova Despesa", true);
     this.expenseService = new ExpenseService();
     this.userService = new UserService();
     this.onSuccessCallback = onSuccessCallback;
@@ -32,26 +32,22 @@ public class ExpenseDialog extends JDialog {
     setLocationRelativeTo(getParent());
     setLayout(new GridLayout(6, 1, 10, 10));
 
-    // Campos
     JTextField txtTitle = new JTextField();
     txtTitle.setBorder(BorderFactory.createTitledBorder("Título (Ex: Mercado)"));
 
     JTextField txtAmount = new JTextField();
     txtAmount.setBorder(BorderFactory.createTitledBorder("Valor (R$)"));
 
-    // ComboBox de Categorias
     JComboBox<ExpenseCategory> cbCategory = new JComboBox<>(ExpenseCategory.values());
 
-    // Configura um Renderer para exibir o Label (Português) em vez do Enum (Inglês)
     cbCategory.setRenderer(new DefaultListCellRenderer() {
       @Override
       public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
           boolean cellHasFocus) {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-        if (value instanceof ExpenseCategory) {
-          // Aqui está a mágica: pegamos o Label do enum
-          setText(((ExpenseCategory) value).getLabel());
+        if (value instanceof ExpenseCategory category) {
+          setText(category.getLabel());
         }
 
         return this;
@@ -60,7 +56,6 @@ public class ExpenseDialog extends JDialog {
 
     cbCategory.setBorder(BorderFactory.createTitledBorder("Categoria"));
 
-    // Radio Buttons para Status
     JRadioButton rbtnPending = new JRadioButton("Pendente", true);
     JRadioButton rbtnPaid = new JRadioButton("Pago");
     ButtonGroup statusGroup = new ButtonGroup();
@@ -72,14 +67,12 @@ public class ExpenseDialog extends JDialog {
     panelStatus.add(rbtnPending);
     panelStatus.add(rbtnPaid);
 
-    // Data (Simples texto para MVP, formato dd/MM/yyyy)
     JFormattedTextField txtDate = new JFormattedTextField();
     txtDate.setValue(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
     txtDate.setBorder(BorderFactory.createTitledBorder("Data (dd/MM/yyyy)"));
 
     JButton btnSave = new JButton("Salvar Despesa");
 
-    // Adiciona componentes
     add(txtTitle);
     add(txtAmount);
     add(cbCategory);
@@ -95,7 +88,6 @@ public class ExpenseDialog extends JDialog {
         ExpenseCategory category = (ExpenseCategory) cbCategory.getSelectedItem();
         ExpenseStatus status = rbtnPaid.isSelected() ? ExpenseStatus.PAID : ExpenseStatus.PENDING;
 
-        // Parse Data
         LocalDate date = LocalDate.parse(txtDate.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
         Expense expense = new Expense(user.getId(), title, amount, status, category, date);
@@ -103,8 +95,8 @@ public class ExpenseDialog extends JDialog {
         expenseService.registerExpense(expense);
 
         JOptionPane.showMessageDialog(this, "Despesa salva!");
-        onSuccessCallback.run(); // Atualiza a tela principal
-        dispose(); // Fecha janela
+        onSuccessCallback.run();
+        dispose();
 
       } catch (Exception ex) {
         JOptionPane.showMessageDialog(this, "Erro ao salvar: " + ex.getMessage());

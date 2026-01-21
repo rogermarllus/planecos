@@ -16,7 +16,6 @@ class ExpenseStatusTest {
   @Test
   @DisplayName("Deve lançar exceção para status inválido")
   void shouldThrowExceptionForInvalidString() {
-    // Diferente da Categoria, aqui queremos que quebre se vier algo errado do banco
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
       ExpenseStatus.fromString("INVALIDO");
     });
