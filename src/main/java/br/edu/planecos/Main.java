@@ -12,7 +12,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) { // ou "Windows"
+                if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
                 }
@@ -20,8 +20,6 @@ public class Main {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        // Usamos invokeLater para garantir que a GUI rode na Thread correta do Swing
-        // (EDT)
         SwingUtilities.invokeLater(() -> {
             try {
                 UserService userService = new UserService();

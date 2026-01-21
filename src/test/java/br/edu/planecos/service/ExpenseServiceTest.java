@@ -28,24 +28,19 @@ class ExpenseServiceTest {
     this.expenseService = new ExpenseService();
     this.userService = new UserService();
 
-    // Cria um usuário com R$ 1000,00 para os testes
     this.userPadrao = userService.registerNewUser("Tester", new BigDecimal("1000.00"));
   }
 
   @Test
   @DisplayName("Deve descontar do saldo se a despesa for PAGA")
   void shouldDeductBalanceWhenPaid() {
-    // Cenário: Gasto de R$ 200,00 pago
     Expense exp = createExpense(new BigDecimal("200.00"), ExpenseStatus.PAID);
 
-    // Ação
     expenseService.registerExpense(exp);
 
-    // Verificação: Saldo deve cair para 800 (1000 - 200)
     User userAtualizado = userService.getCurrentUser();
     BigDecimal esperado = new BigDecimal("800.00");
 
-    // compareTo retorna 0 se for igual (ignora casas decimais extras)
     Assertions.assertEquals(0, esperado.compareTo(userAtualizado.getCurrentBalance()),
         "O saldo deveria ter sido descontado");
   }
@@ -53,12 +48,10 @@ class ExpenseServiceTest {
   @Test
   @DisplayName("NÃO deve descontar do saldo se a despesa for PENDENTE")
   void shouldNotDeductBalanceWhenPending() {
-    // Cenário: Gasto de R$ 200,00 pendente
     Expense exp = createExpense(new BigDecimal("200.00"), ExpenseStatus.PENDING);
 
     expenseService.registerExpense(exp);
 
-    // Verificação: Saldo deve continuar 1000
     User userAtualizado = userService.getCurrentUser();
     BigDecimal esperado = new BigDecimal("1000.00");
 
@@ -76,7 +69,6 @@ class ExpenseServiceTest {
     });
   }
 
-  // --- Helpers ---
   private Expense createExpense(BigDecimal amount, ExpenseStatus status) {
     return new Expense(
         userPadrao.getId(),

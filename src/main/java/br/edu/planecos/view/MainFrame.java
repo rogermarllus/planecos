@@ -13,22 +13,21 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MainFrame extends JFrame {
 
-  private final UserService userService;
-  private final ExpenseService expenseService;
+  private final transient UserService userService;
+  private final transient ExpenseService expenseService;
 
-  // Componentes de UI que precisam ser atualizados
   private JLabel lblUserName;
   private JLabel lblBalance;
   private JTable expenseTable;
   private DefaultTableModel tableModel;
 
-  // Filtros
   private JComboBox<Object> filterCategory;
   private JComboBox<Object> filterStatus;
+
+  private static final String FONT_FAMILY = "Arial";
 
   public MainFrame() {
     this.userService = new UserService();
@@ -40,20 +39,19 @@ public class MainFrame extends JFrame {
   private void initUI() {
     setTitle("Planecos - Controle de Despesas");
     setSize(800, 600);
-    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    setDefaultCloseOperation(3);
     setLocationRelativeTo(null);
     setLayout(new BorderLayout());
 
-    // --- PAINEL TOPO (Info do Usuário) ---
     JPanel topPanel = new JPanel(new BorderLayout());
     topPanel.setBackground(new Color(240, 248, 255));
     topPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
     lblUserName = new JLabel("Usuário: Carregando...");
-    lblUserName.setFont(new Font("Arial", Font.BOLD, 16));
+    lblUserName.setFont(new Font(FONT_FAMILY, Font.BOLD, 16));
 
     lblBalance = new JLabel("Saldo: R$ 0,00");
-    lblBalance.setFont(new Font("Arial", Font.BOLD, 16));
+    lblBalance.setFont(new Font(FONT_FAMILY, Font.BOLD, 16));
     lblBalance.setForeground(new Color(0, 100, 0));
 
     JButton btnEditProfile = new JButton("Editar Perfil");
@@ -69,36 +67,29 @@ public class MainFrame extends JFrame {
 
     add(topPanel, BorderLayout.NORTH);
 
-    // --- PAINEL CENTRO (Tabela e Filtros) ---
     JPanel centerPanel = new JPanel(new BorderLayout());
 
-    // Barra de Filtros
     JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
     filterPanel.add(new JLabel("Filtrar por: "));
 
     filterCategory = new JComboBox<>();
 
-    // 1. Adiciona a opção "coringa" (String)
     filterCategory.addItem("Todas as Categorias");
 
-    // 2. Adiciona os Enums REAIS (não o .name())
     for (ExpenseCategory c : ExpenseCategory.values()) {
       filterCategory.addItem(c);
     }
 
-    // 3. O Renderer Inteligente
     filterCategory.setRenderer(new DefaultListCellRenderer() {
       @Override
       public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
           boolean cellHasFocus) {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-        if (value instanceof ExpenseCategory) {
-          // Se for Categoria, mostra o Label traduzido ("Alimentação")
-          setText(((ExpenseCategory) value).getLabel());
-        } else if (value instanceof String) {
-          // Se for a String "Todas as Categorias", mostra ela mesma
-          setText((String) value);
+        if (value instanceof ExpenseCategory category) {
+          setText(category.getLabel());
+        } else if (value instanceof String text) {
+          setText(text);
         }
 
         return this;
@@ -108,24 +99,20 @@ public class MainFrame extends JFrame {
     filterStatus = new JComboBox<>();
     filterStatus.addItem("Todos os Status");
 
-    // Adiciona o OBJETO Enum real, não a String .name()
     for (ExpenseStatus s : ExpenseStatus.values()) {
       filterStatus.addItem(s);
     }
 
-    // Configura o Renderer para mostrar o Label ("Pago"/"Pendente")
     filterStatus.setRenderer(new DefaultListCellRenderer() {
       @Override
       public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
           boolean cellHasFocus) {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
-        if (value instanceof ExpenseStatus) {
-          // Pega o texto bonito do Enum ("Pendente", "Pago")
-          setText(((ExpenseStatus) value).getLabel());
-        } else if (value instanceof String) {
-          // Pega o texto "Todos os Status"
-          setText((String) value);
+        if (value instanceof ExpenseStatus status) {
+          setText(status.getLabel());
+        } else if (value instanceof String text) {
+          setText(text);
         }
         return this;
       }
@@ -140,10 +127,9 @@ public class MainFrame extends JFrame {
 
     centerPanel.add(filterPanel, BorderLayout.NORTH);
 
-    // Tabela
     String[] columns = { "ID", "Título", "Valor (R$)", "Categoria", "Data", "Situação" };
     tableModel = new DefaultTableModel(columns, 0) {
-      @Override // Impede edição direta na célula (regra de negócio)
+      @Override
       public boolean isCellEditable(int row, int column) {
         return false;
       }
@@ -153,7 +139,6 @@ public class MainFrame extends JFrame {
 
     add(centerPanel, BorderLayout.CENTER);
 
-    // --- PAINEL INFERIOR (Ações) ---
     JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
     JButton btnDelete = new JButton("Excluir Selecionada");
@@ -165,20 +150,18 @@ public class MainFrame extends JFrame {
     btnToggleStatus.addActionListener(e -> toggleExpenseStatus());
 
     JButton btnAdd = new JButton("Nova Despesa");
-    btnAdd.setFont(new Font("Arial", Font.BOLD, 14));
+    btnAdd.setFont(new Font(FONT_FAMILY, Font.BOLD, 14));
     btnAdd.setBackground(new Color(65, 105, 225));
     btnAdd.setForeground(Color.WHITE);
     btnAdd.addActionListener(e -> openExpenseDialog());
 
     bottomPanel.add(btnDelete);
     bottomPanel.add(btnToggleStatus);
-    bottomPanel.add(Box.createHorizontalStrut(20)); // Espaçamento
+    bottomPanel.add(Box.createHorizontalStrut(20));
     bottomPanel.add(btnAdd);
 
     add(bottomPanel, BorderLayout.SOUTH);
   }
-
-  // --- AÇÕES E LÓGICA ---
 
   private void refreshData() {
     refreshHeader();
@@ -189,78 +172,56 @@ public class MainFrame extends JFrame {
     User user = userService.getCurrentUser();
     if (user != null) {
       lblUserName.setText("Usuário: " + user.getFullName());
-      // Formata o saldo com 2 casas decimais
       lblBalance.setText(String.format("Saldo Atual: R$ %.2f", user.getCurrentBalance()));
 
-      // Dica de UX: Mudar cor se saldo for negativo
       if (user.getCurrentBalance().signum() < 0) {
         lblBalance.setForeground(Color.RED);
       } else {
-        lblBalance.setForeground(new Color(0, 100, 0)); // Verde escuro
+        lblBalance.setForeground(new Color(0, 100, 0));
       }
     }
   }
 
   private void refreshTable() {
-    // 1. Limpa as linhas atuais da tabela
     tableModel.setRowCount(0);
 
-    // 2. Busca os dados atualizados do banco via Service
     List<Expense> expenses = expenseService.listAllExpenses();
-
-    // 3. Captura os objetos selecionados nos ComboBoxes
-    // Nota: Podem ser String ("Todas...") ou o próprio Enum
-    // (ExpenseCategory/ExpenseStatus)
     Object selectedCat = filterCategory.getSelectedItem();
     Object selectedStat = filterStatus.getSelectedItem();
 
-    // 4. Filtra a lista usando Stream e verificando os tipos
     List<Expense> filtered = expenses.stream()
         .filter(e -> {
-          // --- Filtro de Categoria ---
-          if (selectedCat instanceof String) {
-            return true; // Usuário selecionou "Todas as Categorias"
-          }
-          if (selectedCat instanceof ExpenseCategory) {
-            // Compara o Enum da despesa com o Enum do filtro
-            return e.getCategory() == selectedCat;
+          if (selectedCat instanceof ExpenseCategory category) {
+            return e.getCategory() == category;
           }
           return true;
         })
         .filter(e -> {
-          // --- Filtro de Status ---
-          if (selectedStat instanceof String) {
-            return true; // Usuário selecionou "Todos os Status"
-          }
-          if (selectedStat instanceof ExpenseStatus) {
-            // Compara o Enum da despesa com o Enum do filtro
-            return e.getStatus() == selectedStat;
+          if (selectedStat instanceof ExpenseStatus status) {
+            return e.getStatus() == status;
           }
           return true;
         })
-        .collect(Collectors.toList());
+        .toList();
 
-    // 5. Preenche a tabela com os dados formatados
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     for (Expense e : filtered) {
       Object[] row = {
           e.getId(),
           e.getTitle(),
-          e.getAmount(), // Valor (BigDecimal)
-          e.getCategory().getLabel(), // Mostra "Alimentação" em vez de FOOD
-          e.getExpenseDate().format(dtf), // Data formatada BR
-          e.getStatus().getLabel() // Mostra "Pago" ou "Pendente"
+          e.getAmount(),
+          e.getCategory().getLabel(),
+          e.getExpenseDate().format(dtf),
+          e.getStatus().getLabel()
       };
       tableModel.addRow(row);
     }
 
-    // 6. Aproveita para atualizar o saldo no topo da tela (caso tenha mudado algo)
     refreshHeader();
   }
 
   private void openExpenseDialog() {
-    // Passa uma função lambda para atualizar a tela após salvar
     new ExpenseDialog(this, this::refreshData).setVisible(true);
   }
 
@@ -271,7 +232,7 @@ public class MainFrame extends JFrame {
       return;
     }
 
-    Long id = (Long) tableModel.getValueAt(row, 0); // Pega o ID da coluna 0
+    Long id = (Long) tableModel.getValueAt(row, 0);
     int confirm = JOptionPane.showConfirmDialog(this, "Tem certeza?", "Excluir", JOptionPane.YES_NO_OPTION);
 
     if (confirm == JOptionPane.YES_OPTION) {
@@ -283,7 +244,6 @@ public class MainFrame extends JFrame {
   private void editProfile() {
     User user = userService.getCurrentUser();
 
-    // Painel simples para edição rápida
     JTextField txtName = new JTextField(user.getFullName());
     JTextField txtBal = new JTextField(user.getCurrentBalance().toString());
 

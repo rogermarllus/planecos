@@ -8,14 +8,11 @@ public class UserService {
 
   private final UserDAO userDAO;
 
-  // Injeção de dependência via construtor (Isso facilita testes com Mockito
-  // depois!)
   public UserService() {
     this.userDAO = new UserDAO();
   }
 
   public User registerNewUser(String fullName, BigDecimal initialBalance) {
-    // Regra de Negócio 1: Validação
     if (fullName == null || fullName.trim().isEmpty()) {
       throw new IllegalArgumentException("O nome do usuário não pode ser vazio.");
     }
@@ -32,7 +29,6 @@ public class UserService {
   }
 
   public void updateUserProfile(User user) {
-    // Validações básicas
     if (user.getFullName() == null || user.getFullName().trim().isEmpty()) {
       throw new IllegalArgumentException("Nome não pode ser vazio.");
     }

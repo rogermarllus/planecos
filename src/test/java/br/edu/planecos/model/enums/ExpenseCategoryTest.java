@@ -10,8 +10,7 @@ class ExpenseCategoryTest {
   @DisplayName("Deve converter string válida para Enum")
   void shouldConvertValidString() {
     Assertions.assertEquals(ExpenseCategory.FOOD, ExpenseCategory.fromString("FOOD"));
-    Assertions.assertEquals(ExpenseCategory.TRANSPORT, ExpenseCategory.fromString("transport")); // Teste
-                                                                                                 // case-insensitive
+    Assertions.assertEquals(ExpenseCategory.TRANSPORT, ExpenseCategory.fromString("transport"));
   }
 
   @Test
