@@ -16,7 +16,7 @@ public class RegisterFrame extends JFrame {
 
   private void initUI() {
     setTitle("Bem-vindo ao Planecos");
-    setSize(300, 250);
+    setSize(300, 350);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     setLocationRelativeTo(null); // Centraliza na tela
     setLayout(new GridLayout(4, 1, 10, 10));
@@ -33,7 +33,7 @@ public class RegisterFrame extends JFrame {
     btnSave.setForeground(Color.WHITE);
 
     // Adiciona à tela
-    add(new JLabel(" Configuração Inicial", SwingConstants.CENTER));
+    add(new JLabel(" Faça Seu Cadastro!", SwingConstants.CENTER));
     add(txtName);
     add(txtBalance);
     add(btnSave);
