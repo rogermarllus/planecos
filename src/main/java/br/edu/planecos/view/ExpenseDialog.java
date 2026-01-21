@@ -28,7 +28,7 @@ public class ExpenseDialog extends JDialog {
   }
 
   private void initUI() {
-    setSize(400, 400);
+    setSize(400, 500);
     setLocationRelativeTo(getParent());
     setLayout(new GridLayout(6, 1, 10, 10));
 
@@ -39,8 +39,25 @@ public class ExpenseDialog extends JDialog {
     JTextField txtAmount = new JTextField();
     txtAmount.setBorder(BorderFactory.createTitledBorder("Valor (R$)"));
 
-    // ComboBox de Categorias (Carrega do Enum)
+    // ComboBox de Categorias
     JComboBox<ExpenseCategory> cbCategory = new JComboBox<>(ExpenseCategory.values());
+
+    // Configura um Renderer para exibir o Label (Português) em vez do Enum (Inglês)
+    cbCategory.setRenderer(new DefaultListCellRenderer() {
+      @Override
+      public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+          boolean cellHasFocus) {
+        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+        if (value instanceof ExpenseCategory) {
+          // Aqui está a mágica: pegamos o Label do enum
+          setText(((ExpenseCategory) value).getLabel());
+        }
+
+        return this;
+      }
+    });
+
     cbCategory.setBorder(BorderFactory.createTitledBorder("Categoria"));
 
     // Radio Buttons para Status
